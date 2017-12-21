@@ -1,0 +1,54 @@
+package model;
+
+import data.SQLiteUtils;
+
+import java.sql.ResultSet;
+import java.sql.Time;
+
+public class Message {
+    private String MAC;
+    private int Recv;
+    private int Type;
+    private String Content;
+    private Time time;
+
+    public String getMAC() {
+        return MAC;
+    }
+
+    public void setMAC(String MAC) {
+        this.MAC = MAC;
+    }
+
+    public int getRecv() {
+        return Recv;
+    }
+
+    public void setRecv(int recv) {
+        Recv = recv;
+    }
+
+    public int getType() {
+        return Type;
+    }
+
+    public void setType(int type) {
+        Type = type;
+    }
+
+    public String getContent() {
+        return Content;
+    }
+
+    public void setContent(String content) {
+        Content = content;
+    }
+
+    public Time getTime() {
+        return time;
+    }
+
+    public void setTime(Time time) {
+        this.time = time;
+    }
+}
