@@ -1,23 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="70f6a9b4-dc70-4307-854f-38d37b12462f" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/src/data/JsonUtils.java" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/test/src/TestHostInfo.java" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/out/production/chat-p2p/data/SQLiteUtils.class" afterPath="$PROJECT_DIR$/out/production/chat-p2p/data/SQLiteUtils.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/chat-p2p/net/HostInfo.class" afterPath="$PROJECT_DIR$/out/production/chat-p2p/net/HostInfo.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/chat-p2p/net/SocketClient.class" afterPath="$PROJECT_DIR$/out/production/chat-p2p/net/SocketClient.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/chat-p2p/net/SocketServer$CreateServerThread.class" afterPath="$PROJECT_DIR$/out/production/chat-p2p/net/SocketServer$CreateServerThread.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/chat-p2p/net/SocketServer.class" afterPath="$PROJECT_DIR$/out/production/chat-p2p/net/SocketServer.class" />
-      <change beforePath="$PROJECT_DIR$/out/test/chat-p2p/src/TestClient.class" afterPath="$PROJECT_DIR$/out/test/chat-p2p/src/TestClient.class" />
-      <change beforePath="$PROJECT_DIR$/src/data/SQLiteUtils.java" afterPath="$PROJECT_DIR$/src/data/SQLiteUtils.java" />
-      <change beforePath="$PROJECT_DIR$/src/model/Message.java" afterPath="$PROJECT_DIR$/src/model/Message.java" />
-      <change beforePath="$PROJECT_DIR$/src/net/HostInfo.java" afterPath="$PROJECT_DIR$/src/net/HostInfo.java" />
-      <change beforePath="$PROJECT_DIR$/src/net/SocketClient.java" afterPath="$PROJECT_DIR$/src/net/SocketClient.java" />
-      <change beforePath="$PROJECT_DIR$/src/net/SocketServer.java" afterPath="$PROJECT_DIR$/src/net/SocketServer.java" />
-      <change beforePath="$PROJECT_DIR$/test/src/TestClient.java" afterPath="$PROJECT_DIR$/test/src/TestClient.java" />
-    </list>
+    <list default="true" id="70f6a9b4-dc70-4307-854f-38d37b12462f" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -31,8 +15,8 @@
       <file leaf-file-name="HostInfo.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/net/HostInfo.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="210">
-              <caret line="83" column="31" lean-forward="true" selection-start-line="83" selection-start-column="31" selection-end-line="83" selection-end-column="31" />
+            <state relative-caret-position="462">
+              <caret line="97" column="25" lean-forward="true" selection-start-line="97" selection-start-column="25" selection-end-line="97" selection-end-column="25" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#3168#3183#0" expanded="true" />
@@ -542,12 +526,12 @@
       <workItem from="1513352287107" duration="112000" />
       <workItem from="1513352521546" duration="354000" />
       <workItem from="1513825460334" duration="18879000" />
-      <workItem from="1513926548994" duration="9655000" />
+      <workItem from="1513926548994" duration="9768000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="29751000" />
+    <option name="totallyTimeSpent" value="29864000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="907" y="0" width="928" height="1087" extended-state="0" />
@@ -932,8 +916,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/net/HostInfo.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="83" column="31" lean-forward="true" selection-start-line="83" selection-start-column="31" selection-end-line="83" selection-end-column="31" />
+        <state relative-caret-position="462">
+          <caret line="97" column="25" lean-forward="true" selection-start-line="97" selection-start-column="25" selection-end-line="97" selection-end-column="25" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#3168#3183#0" expanded="true" />
