@@ -12,6 +12,11 @@ public class Message {
     private String Content;
     private Time time;
 
+    public static final int NOT_MESSAGE = -1;
+    public static final int TEXT = 0;
+    public static final int SENDFILE = 1;
+    public static final int RECVFILE = 2;
+
     public String getMAC() {
         return MAC;
     }

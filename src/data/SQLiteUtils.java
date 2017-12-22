@@ -150,8 +150,7 @@ public class SQLiteUtils {
                 String sql2 = "update usrInfo set remark=\'" + usrInfo.getRemark() +
                         "\',tag=\'" + usrInfo.getTag() + "\',black=" + usrInfo.getBlack() + " where mac=\'" + usrInfo.getMAC() + "\';";
                 state.execute(sql2);
-            }
-            else{
+            } else {
                 rs.close();
                 String sql2 = "insert into usrInfo[(mac,remark,tag,black)] values (\'" + usrInfo.getMAC() + "\',\'" + usrInfo.getRemark() +
                         "\',\'" + usrInfo.getTag() + "\'," + usrInfo.getBlack() + ");";
@@ -161,13 +160,13 @@ public class SQLiteUtils {
         }
     }
 
-    public Map<String,UsrInfo> UpdateUsrList(Map<String, String> onlineList) {
-        Map<String,UsrInfo> usrInfoMap = new HashMap<String,UsrInfo>();
-        for(Map.Entry<String,String> entry : onlineList.entrySet()){
+    public Map<String, UsrInfo> UpdateUsrList(Map<String, String> onlineList) {
+        Map<String, UsrInfo> usrInfoMap = new HashMap<String, UsrInfo>();
+        for (Map.Entry<String, String> entry : onlineList.entrySet()) {
             UsrInfo usrInfo = getUsrInfo(entry.getKey());
             usrInfo.setIP(entry.getValue());
             usrInfo.setState(true);
-            usrInfoMap.put(entry.getKey(),usrInfo);
+            usrInfoMap.put(entry.getKey(), usrInfo);
         }
         return usrInfoMap;
     }
@@ -186,10 +185,13 @@ public class SQLiteUtils {
         }
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        state.close();
-        conn.close();
+    public void Close() {
+        if (conn == null && state == null)
+            try {
+                state.close();
+                conn.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
     }
 }
