@@ -73,7 +73,7 @@ public class SocketServer extends ServerSocket {
 
                 DataOutputStream dos = new DataOutputStream(client.getOutputStream());
                 if (type == Message.RECVFILE) {
-                    String filepath = json.getString("content").split(" ")[0];
+                    String filepath = json.getString("content").split(",")[0];
                     byte[] bufArray = new byte[1024];
                     FileInputStream fileInputStream = new FileInputStream(filepath);
                     while (true) {

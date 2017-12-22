@@ -10,6 +10,9 @@ public class UsrList {
 
     public List<UsrInfo> getRecentList(){
         List<UsrInfo> usrInfoList = new ArrayList<UsrInfo>();
+        for (Map.Entry<String, UsrInfo> entry : usrInfoMap.entrySet()) {
+            usrInfoList.add(entry.getValue());
+        }
         //TODO:排序
         return usrInfoList;
     }

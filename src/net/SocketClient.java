@@ -34,7 +34,7 @@ public class SocketClient {
                     String[] temp = json.getString("content").split(File.separator);
                     String savePath = "./" + temp[temp.length - 1];
                     DataOutputStream fileout = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(savePath)));
-                    long len = Integer.parseInt(json.getString("content").split(" ")[1]);
+                    long len = Integer.parseInt(json.getString("content").split(",")[1]);
                     long passedlen = 0;
                     while (true) {
                         int read = 0;

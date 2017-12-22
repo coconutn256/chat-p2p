@@ -11,7 +11,7 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://D:/Downloads/org.json-20120521.jar!/" />
+          <root url="jar://$MODULE_DIR$/org.json-20120521.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -20,7 +20,7 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://D:/Downloads/sqlitejdbc.jar!/" />
+          <root url="jar://$MODULE_DIR$/sqlitejdbc.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
