@@ -8,17 +8,18 @@ import java.util.Map;
 
 import data.JsonUtils;
 import data.SQLiteUtils;
+import main.Start;
 import model.Message;
+import model.UsrInfo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class SocketServer extends ServerSocket {
-    private static final int SERVER_PORT = 2013;
+    private static final int SERVER_PORT = 2015;
 
     public SocketServer() throws IOException {
         super(SERVER_PORT);
-
         try {
             System.out.println("server started successfully.");
             while (true) {
@@ -51,31 +52,52 @@ public class SocketServer extends ServerSocket {
         public void run() {
             try {
                 DataInputStream dis = new DataInputStream(client.getInputStream());
+                System.out.println(dis.available());
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 byte[] bytes = new byte[2048];
                 int n;
                 while ((n = dis.read(bytes)) != -1) {
-                    baos.write(bytes, 0, n);
+                    System.out.println(new String(bytes));
+                    baos.write(bytes);
+                    baos.flush();
                 }
-                JSONObject json = new JSONObject(baos.toByteArray());
+                JSONObject json = new JSONObject(baos.toString());
+                System.out.println(json.toString());
                 printWriter.close();
                 bufferedReader.close();
                 baos.close();
                 dis.close();
-                client.shutdownInput();
-
-                int type = Integer.parseInt((String) json.get("type"));
-                if (type!=Message.RECVFILE) {
-                    SQLiteUtils sqLiteUtils = new SQLiteUtils();
-                    sqLiteUtils.addMessage(JsonUtils.JsonToMessage(json));
+                Message message = JsonUtils.JsonToMessage(json);
+                message.setRecv(0);
+                System.out.println(message.getMAC());
+                System.out.println(Start.chatFormMap.keySet());
+                int type = Integer.parseInt(json.getString("type"));
+                if (Start.chatFormMap.containsKey(message.getMAC())) {
+                    Start.chatFormMap.get(message.getMAC()).getMessage(message);
+                    System.out.println("Add message to chatForm:" + message.getMAC());
+                } else {
+                    //TODO:置顶，显示未读
+                }
+                if (type != Message.RECVFILE) {
+                    SQLiteUtils sqLiteUtils = Start.sqLiteUtils;
+                    sqLiteUtils.addMessage(message);
                     sqLiteUtils.Close();
+                    if (type == Message.TEXT) {
+                        Start.usrList.usrInfoMap.get(message.getMAC()).setState(UsrInfo.UNREAD_TEXT);
+                    }
+
+                    if (type == Message.SENDFILE) {
+                        Start.usrList.usrInfoMap.get(message.getMAC()).setState(UsrInfo.UNRECV_FILE);
+                    }
                 }
 
                 DataOutputStream dos = new DataOutputStream(client.getOutputStream());
                 if (type == Message.RECVFILE) {
                     String filepath = json.getString("content").split(",")[0];
+                    String[] temp = filepath.split(File.separator);
                     byte[] bufArray = new byte[1024];
                     FileInputStream fileInputStream = new FileInputStream(filepath);
+                    System.out.println("Sending " + temp[temp.length - 1] + " to " + client.getLocalAddress().getHostAddress());
                     while (true) {
                         int read = 0;
                         if (fileInputStream != null)
@@ -87,21 +109,20 @@ public class SocketServer extends ServerSocket {
                     dos.flush();
                     fileInputStream.close();
 
-                    SQLiteUtils sqLiteUtils = new SQLiteUtils();
-                    sqLiteUtils.addMessage(JsonUtils.JsonToMessage(json));
-                    sqLiteUtils.Close();
+                    SQLiteUtils sqLiteUtils = Start.sqLiteUtils;
+                    sqLiteUtils.addMessage(message);
                 }
                 dos.close();
             } catch (Exception e) {
                 e.printStackTrace();
                 //TODO:错误信息可视化(发送/接收失败)
-            }finally {
-                try {
-                    if(client!=null)
+            } finally {
+                if (client != null)
+                    try {
                         client.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
             }
         }
     }

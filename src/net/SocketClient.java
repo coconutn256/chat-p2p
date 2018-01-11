@@ -17,13 +17,14 @@ public class SocketClient {
 
     public int SendJson(JSONObject json) {
         try {
-            socket = new Socket(ip, 2013);
+            socket = new Socket(ip, 2015);
             socket.setSoTimeout(20000);
 
             byte[] jsonByte = json.toString().getBytes();
             DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
             dos.write(jsonByte);
             dos.flush();
+            System.out.println("Send to: " + json.getString("ip"));
             socket.shutdownOutput();
 
             if (Integer.parseInt(json.getString("type")) == Message.RECVFILE) {
@@ -59,10 +60,10 @@ public class SocketClient {
         } catch (Exception e) {
             System.out.println("Exception:" + e);
             return -1;
-        }finally {
+        } finally {
             try {
                 socket.close();
-            }catch (IOException e){
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }

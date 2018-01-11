@@ -1,8 +1,7 @@
-package src;
+package test;
 
 import net.HostInfo;
 
-import java.util.List;
 import java.util.Map;
 
 public class TestHostInfo {

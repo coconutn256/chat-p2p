@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,7 +17,7 @@ public class JsonUtils {
             message.setType(Integer.parseInt(json.getString("type")));
             message.setRecv(Integer.parseInt(json.getString("recv")));
             message.setContent(json.getString("content"));
-            message.setTime(Time.valueOf(json.getString("time")));
+            message.setTime(Timestamp.valueOf(json.getString("time")));
             return message;
         } catch (JSONException e) {
             e.printStackTrace();

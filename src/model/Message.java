@@ -4,13 +4,14 @@ import data.SQLiteUtils;
 
 import java.sql.ResultSet;
 import java.sql.Time;
+import java.sql.Timestamp;
 
 public class Message {
     private String MAC;
     private int Recv;
     private int Type;
     private String Content;
-    private Time time;
+    private Timestamp time;
 
     public static final int NOT_MESSAGE = -1;
     public static final int TEXT = 0;
@@ -49,11 +50,11 @@ public class Message {
         Content = content;
     }
 
-    public Time getTime() {
+    public Timestamp getTime() {
         return time;
     }
 
-    public void setTime(Time time) {
+    public void setTime(Timestamp time) {
         this.time = time;
     }
 }

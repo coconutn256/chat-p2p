@@ -11,7 +11,11 @@ public class UsrInfo {
     private String Remark;
     private String Tag;
     private int Black;
-    private boolean state;
+    private int state;
+    public static final int OFFLINE = 0;
+    public static final int ONLINE = 1;
+    public static final int UNREAD_TEXT = 2;
+    public static final int UNRECV_FILE = 3;
     public String getIP() {
         return IP;
     }
@@ -19,7 +23,8 @@ public class UsrInfo {
     public void setIP(String IP) {
         this.IP = IP;
     }
-    public boolean getState() {
+
+    public int getState() {
         return state;
     }
 
@@ -39,7 +44,7 @@ public class UsrInfo {
         return Black;
     }
 
-    public void setState(boolean state) {
+    public void setState(int state) {
         this.state = state;
     }
 
@@ -57,5 +62,16 @@ public class UsrInfo {
 
     public void setBlack(int black) {
         Black = black;
+    }
+
+    public int getPriority() {
+        int result = 0;
+        if (Remark.length() != 0)
+            result += 100;
+        if (getTag().length() != 0)
+            result += 10;
+        if (Black == 1)
+            result = -1;
+        return result;
     }
 }

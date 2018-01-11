@@ -17,10 +17,14 @@ public class SQLiteUtils {
     private boolean dbExist = true;
     private Statement state = null;
 
-    public SQLiteUtils() throws IOException {
+    public SQLiteUtils() {
         if (!new File("chat.db").exists()) {
             File file = new File("chat.db");
-            file.createNewFile();
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             System.out.println(file.getAbsolutePath());
             dbExist = false;
         }
@@ -30,13 +34,14 @@ public class SQLiteUtils {
             conn = DriverManager.getConnection("jdbc:sqlite:chat.db");
             state = conn.createStatement();
             if (!dbExist) {
-                String sqlUsrInfo = "create table usrInfo"
+                String sqlUsrInfo = "create table usrInfo "
                         + "(mac text primary key not null,"
                         + "remark text,"
                         + "tag text,"
                         + "black int default 0);";
                 String sqlChatLog = "create table chatLog"
-                        + "(mac text primary key not null,"
+                        + "(id int PRIMARY KEY,"
+                        + "mac text not null,"
                         + "recv int not null,"
                         + "type int not null,"
                         + "content text not null,"
@@ -55,11 +60,12 @@ public class SQLiteUtils {
             }
             if (!IsTableExist("chatLog", state)) {
                 String sqlChatLog = "create table chatLog"
-                        + "(mac text primary key not null,"
+                        + "(id int PRIMARY KEY,"
+                        + "mac text not null,"
                         + "recv int not null,"
                         + "type int not null,"
                         + "content text not null,"
-                        + "date datetime not null);";
+                        + "time datetime not null);";
                 state.execute(sqlChatLog);
             }
         } catch (Exception e) {
@@ -99,7 +105,7 @@ public class SQLiteUtils {
                 message.setRecv(rs.getInt("recv"));
                 message.setType(rs.getInt("type"));
                 message.setContent(rs.getString("content"));
-                message.setTime(rs.getTime("time"));
+                message.setTime(rs.getTimestamp("time"));
                 messageList.add(message);
             }
             rs.close();
@@ -111,8 +117,9 @@ public class SQLiteUtils {
     }
 
     public void addMessage(Message message) {
+        int id = getRowNum();
         try {
-            String sql = "insert into chatLog[(mac,recv,type,content,time)] values (\'" + message.getMAC() + "\',\'" + message.getRecv() +
+            String sql = "insert into chatLog (id,mac,recv,type,content,time) values (\'" + id + "\',\'" + message.getMAC() + "\',\'" + message.getRecv() +
                     "\',\'" + message.getType() + "\',\'" + message.getContent() + "\',\'" + message.getTime() + "\');";
             state.execute(sql);
         } catch (Exception e) {
@@ -160,12 +167,31 @@ public class SQLiteUtils {
         }
     }
 
+    private int getRowNum() {
+        String sql = "select count(*) from chatLog;";
+        try {
+            ResultSet rs = state.executeQuery(sql);
+            if (rs.next()) {
+                int num = rs.getInt(1);
+                rs.close();
+                return num;
+            } else {
+                rs.close();
+                return 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+
+    }
+
     public Map<String, UsrInfo> UpdateUsrList(Map<String, String> onlineList) {
         Map<String, UsrInfo> usrInfoMap = new HashMap<String, UsrInfo>();
         for (Map.Entry<String, String> entry : onlineList.entrySet()) {
             UsrInfo usrInfo = getUsrInfo(entry.getKey());
             usrInfo.setIP(entry.getValue());
-            usrInfo.setState(true);
+            usrInfo.setState(1);
             usrInfoMap.put(entry.getKey(), usrInfo);
         }
         return usrInfoMap;
