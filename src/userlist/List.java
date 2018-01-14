@@ -6,31 +6,14 @@ import model.UsrInfo;
 import model.UsrList;
 import net.UDPClient;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Insets;
-import java.awt.Toolkit;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 
 
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-
+import javax.swing.*;
 
 
 public class List extends CommonView implements KeyListener, MouseListener {
@@ -41,7 +24,7 @@ public class List extends CommonView implements KeyListener, MouseListener {
 	JLabel leftTopTitleLabel, avatarLabel, nickNameLabel, searchLabel;
 	JTextField searchInput;
 	JScrollPane listScrollPane;
-	JLabel[] friendListLabel, friendListNicknameLabel;
+    JLabel[] friendListLabel, friendListNicknameLabel, friendListStateLable;
 	JPanel[] friendListPanel;
 	private int currentFriendListPanelIndex = -1, lastClickFriendListPanelIndex = -1;
 	private long lastUpdateGTimestamp = -1, lastClickFriendListPanelTimestamp = -1;
@@ -90,6 +73,28 @@ public class List extends CommonView implements KeyListener, MouseListener {
 		this.nickNameLabel.setForeground(Color.WHITE);
 		this.bannerPanel.add(this.nickNameLabel);
 
+        JButton norm = new JButton("正常");
+        norm.setBounds(80, 80, 80, 20);
+        norm.setVisible(true);
+        this.bannerPanel.add(norm);
+        norm.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                refresh(usrList);
+            }
+        });
+
+        JButton black = new JButton("黑名单");
+        black.setBounds(160, 80, 80, 20);
+        black.setVisible(true);
+        this.bannerPanel.add(black);
+        black.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                black(usrList);
+            }
+        });
+
 		this.backgroundPanel.add(this.bannerPanel);
 
 		/** searchPanel **/
@@ -109,7 +114,6 @@ public class List extends CommonView implements KeyListener, MouseListener {
 		this.searchInput.addKeyListener(this);
 		this.searchInput.setMargin(new Insets(0, 10, 0, 0));
 		this.searchPanel.add(this.searchInput);
-
 		this.searchLabel = new JLabel(new ImageIcon("resource/image/find.png"));
 		this.searchLabel.setBounds(250, 0, 30, 30);
 		this.searchPanel.add(this.searchLabel);
@@ -139,12 +143,18 @@ public class List extends CommonView implements KeyListener, MouseListener {
 		this.friendListLabel = new JLabel[friendListCount];
 		this.friendListPanel = new JPanel[friendListCount];
 		this.friendListNicknameLabel = new JLabel[friendListCount];
-
+        this.friendListStateLable = new JLabel[friendListCount];
+        String[] state = new String[]{"离线", "在线", "未读"};
 		for (int i = 0; i < this.friendListLabel.length; i++) {
 			this.friendListPanel[i] = new JPanel();
-			this.friendListNicknameLabel[i] = new JLabel(usrInfoList.get(i).getRemark());
+            if (usrInfoList.get(i).getRemark() != null)
+                this.friendListNicknameLabel[i] = new JLabel(usrInfoList.get(i).getRemark());
+            else
+                this.friendListNicknameLabel[i] = new JLabel(usrInfoList.get(i).getIP());
 			this.friendListNicknameLabel[i].setBounds(60, -10, 100, 50);
-			this.friendListPanel[i].addMouseListener(new FriendListPanelListener(i, usrInfoList.get(i)));
+            this.friendListStateLable[i] = new JLabel(state[usrInfoList.get(i).getState()]);
+            this.friendListStateLable[i].setBounds(200, -10, 100, 50);
+            this.friendListPanel[i].addMouseListener(new FriendListPanelListener(i, usrInfoList.get(i), usrList.getRecentList()));
 			this.friendListPanel[i].setOpaque(false);
 			this.friendListPanel[i].setLayout(null);
 			this.friendListPanel[i].setBounds(0, 50 * i, 280, 50);
@@ -162,6 +172,7 @@ public class List extends CommonView implements KeyListener, MouseListener {
 			this.friendListLabel[i] = new JLabel(new ImageIcon("resource/image/head/" + index + ".png"));
 			this.friendListLabel[i].setBounds(2, 0, 50, 50);
 			this.friendListPanel[i].add(this.friendListNicknameLabel[i]);
+            this.friendListPanel[i].add(this.friendListStateLable[i]);
 			this.friendListPanel[i].add(this.friendListLabel[i]);
 			this.scrollPanePanel.add(this.friendListPanel[i]);
 			this.listScrollPane.setViewportView(this.scrollPanePanel);
@@ -189,49 +200,170 @@ public class List extends CommonView implements KeyListener, MouseListener {
 		this.setVisible(true);
 	}
 
-	public void refresh(UsrList usrList) {
-		/** friendlist jlabel **/
-		java.util.List<UsrInfo> usrInfoList = usrList.getRecentList();
-		int friendListCount = usrInfoList.size();
+    public void black(UsrList usrList) {
+        java.util.List<UsrInfo> usrInfoList = usrList.getRecentList();
+        int friendListCount = usrInfoList.size();
+        java.util.List<UsrInfo> blackList = new ArrayList<UsrInfo>();
+        for (int i = 0; i < friendListCount; i++) {
+            if (usrInfoList.get(i).getBlack() == 1) {
+                blackList.add(usrInfoList.get(i));
+            }
+        }
 
-		this.friendListLabel = new JLabel[friendListCount];
-		this.friendListPanel = new JPanel[friendListCount];
-		this.friendListNicknameLabel = new JLabel[friendListCount];
+        int blackListCount = blackList.size();
+        this.scrollPanePanel.removeAll();
 
-		for (int i = 0; i < this.friendListLabel.length; i++) {
-			this.friendListPanel[i] = new JPanel();
-			this.friendListNicknameLabel[i] = new JLabel(usrInfoList.get(i).getRemark());
-			this.friendListNicknameLabel[i].setBounds(60, -10, 100, 50);
-			this.friendListPanel[i].addMouseListener(new FriendListPanelListener(i, usrInfoList.get(i)));
-			this.friendListPanel[i].setOpaque(false);
-			this.friendListPanel[i].setLayout(null);
-			this.friendListPanel[i].setBounds(0, 50 * i, 280, 50);
-			int top = 0;
-			if (i == 0) {
-				top = 1;
-			}
-			this.friendListPanel[i].setBorder(BorderFactory.createMatteBorder(top, 0, 1, 0, new Color(220, 219, 222)));
-			int randomHeadIndex = (int) Math.ceil(Math.random() * 100);
-			int index = 0;
-			if (i + 1 > 260)
-				index = i - 259;
-			else
-				index = i + 1;
-			this.friendListLabel[i] = new JLabel(new ImageIcon("resource/image/head/" + index + ".png"));
-			this.friendListLabel[i].setBounds(2, 0, 50, 50);
-			this.friendListPanel[i].add(this.friendListNicknameLabel[i]);
-			this.friendListPanel[i].add(this.friendListLabel[i]);
-			this.scrollPanePanel.add(this.friendListPanel[i]);
-			this.scrollPanePanel.setOpaque(false);
-			this.listScrollPane.setOpaque(false);
-			this.listScrollPane.setViewportView(this.scrollPanePanel);
-			this.listScrollPane.addMouseWheelListener(new FriendListScrollPaneMouseWheelListener());
-			this.listPanel.add(this.listScrollPane);
-			this.listPanel.setOpaque(false);
-			this.backgroundPanel.add(this.listPanel);
-			//this.backgroundPanel.paint(getGraphics());
-		}
-	}
+        this.friendListLabel = new JLabel[blackListCount];
+        this.friendListPanel = new JPanel[blackListCount];
+        this.friendListNicknameLabel = new JLabel[blackListCount];
+        this.friendListStateLable = new JLabel[blackListCount];
+        String[] state = new String[]{"离线", "在线", "未读"};
+        for (int i = 0; i < this.friendListLabel.length; i++) {
+            this.friendListPanel[i] = new JPanel();
+            if (usrInfoList.get(i).getRemark() != null)
+                this.friendListNicknameLabel[i] = new JLabel(blackList.get(i).getRemark());
+            else
+                this.friendListNicknameLabel[i] = new JLabel(blackList.get(i).getRemark());
+            this.friendListNicknameLabel[i].setBounds(60, -10, 100, 50);
+            this.friendListStateLable[i] = new JLabel(state[blackList.get(i).getState()]);
+            this.friendListStateLable[i].setBounds(200, -10, 100, 50);
+            this.friendListPanel[i].addMouseListener(new FriendListPanelListener(i, blackList.get(i), usrList.getRecentList()));
+            this.friendListPanel[i].setOpaque(false);
+            this.friendListPanel[i].setLayout(null);
+            this.friendListPanel[i].setBounds(0, 50 * i, 280, 50);
+            int top = 0;
+            if (i == 0) {
+                top = 1;
+            }
+            this.friendListPanel[i].setBorder(BorderFactory.createMatteBorder(top, 0, 1, 0, new Color(220, 219, 222)));
+            int randomHeadIndex = (int) Math.ceil(Math.random() * 100);
+            int index = 0;
+            if (i + 1 > 260)
+                index = i - 259;
+            else
+                index = i + 1;
+            this.friendListLabel[i] = new JLabel(new ImageIcon("resource/image/head/" + index + ".png"));
+            this.friendListLabel[i].setBounds(2, 0, 50, 50);
+            this.friendListPanel[i].add(this.friendListNicknameLabel[i]);
+            this.friendListPanel[i].add(this.friendListStateLable[i]);
+            this.friendListPanel[i].add(this.friendListLabel[i]);
+            this.scrollPanePanel.add(this.friendListPanel[i]);
+            this.scrollPanePanel.setOpaque(false);
+            this.listScrollPane.setOpaque(false);
+            this.listScrollPane.setViewportView(this.scrollPanePanel);
+            this.listScrollPane.addMouseWheelListener(new FriendListScrollPaneMouseWheelListener());
+            this.listPanel.add(this.listScrollPane);
+            this.listPanel.setOpaque(false);
+            this.backgroundPanel.add(this.listPanel);
+            this.backgroundPanel.paint(getGraphics());
+            List.this.updateG();
+        }
+
+    }
+
+    public void refresh(UsrList usrList) {
+        /** friendlist jlabel **/
+        java.util.List<UsrInfo> usrInfoList = usrList.getRecentList();
+        int friendListCount = usrInfoList.size();
+        this.scrollPanePanel.removeAll();
+        this.friendListLabel = new JLabel[friendListCount];
+        this.friendListPanel = new JPanel[friendListCount];
+        this.friendListNicknameLabel = new JLabel[friendListCount];
+        this.friendListStateLable = new JLabel[friendListCount];
+        String[] state = new String[]{"离线", "在线", "未读"};
+        for (int i = 0; i < this.friendListLabel.length; i++) {
+            this.friendListPanel[i] = new JPanel();
+            if (usrInfoList.get(i).getRemark() != null)
+                this.friendListNicknameLabel[i] = new JLabel(usrInfoList.get(i).getRemark());
+            else
+                this.friendListNicknameLabel[i] = new JLabel(usrInfoList.get(i).getIP());
+            this.friendListNicknameLabel[i].setBounds(60, -10, 100, 50);
+            this.friendListStateLable[i] = new JLabel(state[usrInfoList.get(i).getState()]);
+            this.friendListStateLable[i].setBounds(200, -10, 100, 50);
+            this.friendListPanel[i].addMouseListener(new FriendListPanelListener(i, usrInfoList.get(i), usrList.getRecentList()));
+            this.friendListPanel[i].setOpaque(false);
+            this.friendListPanel[i].setLayout(null);
+            this.friendListPanel[i].setBounds(0, 50 * i, 280, 50);
+            int top = 0;
+            if (i == 0) {
+                top = 1;
+            }
+            this.friendListPanel[i].setBorder(BorderFactory.createMatteBorder(top, 0, 1, 0, new Color(220, 219, 222)));
+            int randomHeadIndex = (int) Math.ceil(Math.random() * 100);
+            int index = 0;
+            if (i + 1 > 260)
+                index = i - 259;
+            else
+                index = i + 1;
+            this.friendListLabel[i] = new JLabel(new ImageIcon("resource/image/head/" + index + ".png"));
+            this.friendListLabel[i].setBounds(2, 0, 50, 50);
+            this.friendListPanel[i].add(this.friendListNicknameLabel[i]);
+            this.friendListPanel[i].add(this.friendListStateLable[i]);
+            this.friendListPanel[i].add(this.friendListLabel[i]);
+            this.scrollPanePanel.add(this.friendListPanel[i]);
+            this.scrollPanePanel.setOpaque(false);
+            this.listScrollPane.setOpaque(false);
+            this.listScrollPane.setViewportView(this.scrollPanePanel);
+            this.listScrollPane.addMouseWheelListener(new FriendListScrollPaneMouseWheelListener());
+            this.listPanel.add(this.listScrollPane);
+            this.listPanel.setOpaque(false);
+            this.backgroundPanel.add(this.listPanel);
+            this.backgroundPanel.paint(getGraphics());
+        }
+    }
+
+
+    public void refresh(java.util.List<UsrInfo> usrList) {
+        /** friendlist jlabel **/
+        java.util.List<UsrInfo> usrInfoList = usrList;
+        int friendListCount = usrInfoList.size();
+
+        this.scrollPanePanel.removeAll();
+        this.friendListLabel = new JLabel[friendListCount];
+        this.friendListPanel = new JPanel[friendListCount];
+        this.friendListNicknameLabel = new JLabel[friendListCount];
+        this.friendListStateLable = new JLabel[friendListCount];
+        String[] state = new String[]{"离线", "在线", "未读"};
+        for (int i = 0; i < this.friendListLabel.length; i++) {
+            this.friendListPanel[i] = new JPanel();
+            if (usrInfoList.get(i).getRemark() == null)
+                this.friendListNicknameLabel[i] = new JLabel(usrInfoList.get(i).getRemark());
+            else
+                this.friendListNicknameLabel[i] = new JLabel(usrInfoList.get(i).getIP());
+            this.friendListNicknameLabel[i].setBounds(60, -10, 100, 50);
+            this.friendListStateLable[i] = new JLabel(state[usrInfoList.get(i).getState()]);
+            this.friendListStateLable[i].setBounds(200, -10, 100, 50);
+            this.friendListPanel[i].addMouseListener(new FriendListPanelListener(i, usrInfoList.get(i), usrList));
+            this.friendListPanel[i].setOpaque(false);
+            this.friendListPanel[i].setLayout(null);
+            this.friendListPanel[i].setBounds(0, 50 * i, 280, 50);
+            int top = 0;
+            if (i == 0) {
+                top = 1;
+            }
+            this.friendListPanel[i].setBorder(BorderFactory.createMatteBorder(top, 0, 1, 0, new Color(220, 219, 222)));
+            int randomHeadIndex = (int) Math.ceil(Math.random() * 100);
+            int index = 0;
+            if (i + 1 > 260)
+                index = i - 259;
+            else
+                index = i + 1;
+            this.friendListLabel[i] = new JLabel(new ImageIcon("resource/image/head/" + index + ".png"));
+            this.friendListLabel[i].setBounds(2, 0, 50, 50);
+            this.friendListPanel[i].add(this.friendListNicknameLabel[i]);
+            this.friendListPanel[i].add(this.friendListStateLable[i]);
+            this.friendListPanel[i].add(this.friendListLabel[i]);
+            this.scrollPanePanel.add(this.friendListPanel[i]);
+            this.scrollPanePanel.setOpaque(false);
+            this.listScrollPane.setOpaque(false);
+            this.listScrollPane.setViewportView(this.scrollPanePanel);
+            this.listScrollPane.addMouseWheelListener(new FriendListScrollPaneMouseWheelListener());
+            this.listPanel.add(this.listScrollPane);
+            this.listPanel.setOpaque(false);
+            this.backgroundPanel.add(this.listPanel);
+            this.backgroundPanel.paint(getGraphics());
+        }
+    }
 
 	class BackgroundPanel extends JPanel {
 		private static final long serialVersionUID = -8637125902711760622L;
@@ -340,10 +472,12 @@ public class List extends CommonView implements KeyListener, MouseListener {
 		 */
 		private int index;
 		private UsrInfo usrInfo;
+        private java.util.List<UsrInfo> usrInfoList;
 
-		public FriendListPanelListener(int index, UsrInfo usrInfo) {
+        public FriendListPanelListener(int index, UsrInfo usrInfo, java.util.List<UsrInfo> usrInfoList) {
 			this.index = index;
 			this.usrInfo = usrInfo;
+            this.usrInfoList = usrInfoList;
 		}
 
 		@Override
@@ -371,18 +505,17 @@ public class List extends CommonView implements KeyListener, MouseListener {
 
 		public void mouseClicked(MouseEvent e) {
 			long now = new Date().getTime();
-			if (List.this.lastClickFriendListPanelIndex == this.index) {
-				if (now - List.this.lastClickFriendListPanelTimestamp < 500) {
-					/** double clicked event on the friendlist jpanel to open the chat window. **/
-					if (!Start.chatFormMap.containsKey(usrInfo.getMAC())) {
-						ChatForm chatForm = new ChatForm(this.usrInfo);
-						Start.chatFormMap.put(usrInfo.getMAC(), chatForm);
-						System.out.println("Open the chat window. The current uid is " + this.index);
-					}
-
+            if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
+                /** double clicked event on the friendlist jpanel to open the chat window. **/
+                if (!Start.chatFormMap.containsKey(usrInfo.getMAC())) {
+                    ChatForm chatForm = new ChatForm(this.usrInfo, this.usrInfoList);
+                    Start.chatFormMap.put(usrInfo.getMAC(), chatForm);
+                    System.out.println("Open the chat window. The current uid is " + this.index);
 				}
 			}
-			/** remember the lastClick info. **/
+
+
+            /** remember the lastClick info. **/
 			List.this.lastClickFriendListPanelTimestamp = now;
 			List.this.lastClickFriendListPanelIndex = this.index;
 
@@ -396,6 +529,48 @@ public class List extends CommonView implements KeyListener, MouseListener {
 			List.this.friendListPanel[this.index].setBackground(new Color(250, 233, 172));
 //			System.out.println("mouse clicked the friendlist panel event.");
 			List.this.updateG();
+            //右键菜单栏
+            if (e.getButton() == MouseEvent.BUTTON3) {
+                System.out.println("Right Clicked.");
+                JPopupMenu popupMenu = new JPopupMenu();
+                JMenuItem menuItem = new JMenuItem();
+                JMenuItem menuItem1 = new JMenuItem();
+                JMenuItem menuItem2 = new JMenuItem();
+                menuItem.setLabel("修改备注");
+                menuItem1.setLabel("修改标签");
+                if (this.usrInfo.getBlack() == 0)
+                    menuItem2.setLabel("拉黑此人");
+                else
+                    menuItem2.setLabel("取消拉黑");
+
+                menuItem.setActionCommand("remark");
+                menuItem.setActionCommand("tag");
+                menuItem.setActionCommand("black");
+                menuItem.setEnabled(true);
+                menuItem1.setEnabled(true);
+                menuItem2.setEnabled(true);
+
+                menuItem2.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        usrInfo.setBlack(1 - usrInfo.getBlack());
+                        System.out.println("SetBlack to " + usrInfo.getBlack() + ".");
+                        Start.usrList.usrInfoMap.get(usrInfo.getMAC()).setBlack(1 - usrInfo.getBlack());
+                        if (usrInfo.getBlack() == 0)
+                            menuItem2.setLabel("拉黑此人");
+                        else
+                            menuItem2.setLabel("取消拉黑");
+
+                    }
+                });
+
+                popupMenu.add(menuItem);
+                popupMenu.add(menuItem1);
+                popupMenu.add(menuItem2);
+                popupMenu.setVisible(true);
+                popupMenu.show(e.getComponent(), e.getX(), e.getY());
+            }
+
 		}
 
 	}

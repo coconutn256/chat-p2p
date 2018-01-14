@@ -7,13 +7,11 @@ import java.util.*;
 
 public class UsrList {
     public Map<String, UsrInfo> usrInfoMap;
-    public SQLiteUtils sqLiteUtils;
     public List<UsrInfo> usrInfoList = new ArrayList<UsrInfo>();
     public List<UsrInfo> blackList = new ArrayList<UsrInfo>();
 
     public UsrList() {
         usrInfoMap = new HashMap<String, UsrInfo>();
-        sqLiteUtils = new SQLiteUtils();
     }
 
     public List<UsrInfo> getRecentList() {
@@ -22,7 +20,7 @@ public class UsrList {
             usrInfoList.add(entry.getValue());
         }
         ComparatorRecent comparatorRecent = new ComparatorRecent();
-        Collections.sort(usrInfoList, comparatorRecent);
+        usrInfoList.sort(comparatorRecent);
         return usrInfoList;
     }
 
@@ -38,7 +36,7 @@ public class UsrList {
                 usrInfoList.add(entry.getValue());
         }
         ComparatorRecent comparatorRecent = new ComparatorRecent();
-        Collections.sort(blackList, comparatorRecent);
+        Collections.sort(usrInfoList, comparatorRecent);
         return blackList;
     }
 

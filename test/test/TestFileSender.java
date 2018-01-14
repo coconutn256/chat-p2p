@@ -28,7 +28,7 @@ public class TestFileSender {
             socket = ss.accept();
             dos = new DataOutputStream(socket.getOutputStream());
             dis = new DataInputStream(new BufferedInputStream(new FileInputStream(filePath)));
-
+            System.out.println(filePath);
             int buffferSize = 1024;
             byte[] bufArray = new byte[buffferSize];
             dos.writeUTF(file.getName());
@@ -79,6 +79,6 @@ public class TestFileSender {
     }
 
     public static void main(String[] args) {
-        new TestFileSender().sendFile("sqlitejdbc.jar", 8821);
+        new TestFileSender().sendFile("D:\\Downloads\\system.web.dll", 8821);
     }
 }

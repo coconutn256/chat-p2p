@@ -62,15 +62,13 @@ public class UDPServer {
         public void run() {
             try {
                 String recv = new String(packet.getData());
-                System.out.println(packet.getAddress().getHostAddress() + "," + packet.getPort() + "," + recv.split(",")[1]);
                 if (Integer.parseInt(recv.split(",")[1].trim()) == 1) {
-                    System.out.println(packet.getAddress().getHostAddress() + "," + packet.getPort() + "," + recv);
                     if (!Start.usrList.usrInfoMap.containsKey(recv.split(",")[0].trim())) {
                         Start.usrList.usrInfoMap.put(recv.split(",")[0].trim(), Start.sqLiteUtils.getUsrInfo(recv.split(",")[0].trim()));
                     }
                     Start.usrList.usrInfoMap.get(recv.split(",")[0].trim()).setState(1);
                     Start.usrList.usrInfoMap.get(recv.split(",")[0].trim()).setIP(packet.getAddress().getHostAddress());
-                    Start.onlineTTL.put(recv.split(",")[0].trim(), 3);
+                    Start.onlineTTL.put(recv.split(",")[0].trim(), 2);
                     String toSend = HostInfo.getMac() + ",0";
                     byte[] buf = toSend.getBytes();
                     //发送数据报包

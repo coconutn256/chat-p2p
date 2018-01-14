@@ -12,10 +12,19 @@ public class UsrInfo {
     private String Tag;
     private int Black;
     private int state;
+    private int unread;
     public static final int OFFLINE = 0;
     public static final int ONLINE = 1;
     public static final int UNREAD_TEXT = 2;
     public static final int UNRECV_FILE = 3;
+
+    public UsrInfo() {
+        Remark = null;
+        Tag = null;
+        Black = 0;
+        state = 0;
+    }
+
     public String getIP() {
         return IP;
     }
@@ -66,12 +75,23 @@ public class UsrInfo {
 
     public int getPriority() {
         int result = 0;
-        if (Remark.length() != 0)
+        if (state >= 2)
+            result += 1000;
+        if (Remark != null && Remark.length() != 0)
             result += 100;
-        if (getTag().length() != 0)
+        if (Tag != null && Tag.length() != 0)
             result += 10;
         if (Black == 1)
-            result = -1;
+            result = -2;
         return result;
     }
+
+    public int getUnread() {
+        return unread;
+    }
+
+    public void setUnread(int unread) {
+        this.unread = unread;
+    }
+
 }

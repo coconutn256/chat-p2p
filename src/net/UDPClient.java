@@ -18,7 +18,6 @@ public class UDPClient {
         ds.send(dp);
         //关闭资源
         ds.close();
-        System.out.println("Done.");
     }
 
     public static void SendOffline(String ip) throws Exception {

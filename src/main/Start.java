@@ -24,11 +24,12 @@ public class Start {
     public static Map<String, Integer> onlineTTL = new HashMap<>();
 
     public static void main(String[] args) {
-        String ip = "10.2.19.95";
+        //String ip = "10.2.19.95";
         //String ip = "10.128.171.157";
         //Map<String,String> lanList = HostInfo.getMacIp();
         Map<String, String> lanList = new HashMap<String, String>();
-        lanList.put("wangning", ip);
+        //lanList.put("f0-76-1c-b4-21-3c", "10.128.171.157");
+        lanList.put("34-68-95-00-52-6d", "10.2.19.95");
         new Thread(
                 ()-> {
                     try {
@@ -48,14 +49,17 @@ public class Start {
                         while (true) {
                             for(Map.Entry<String,String> entry:lanList.entrySet()){
                                 UDPClient.SendOnline(entry.getValue().trim());
-                                onlineTTL.put(entry.getKey(), onlineTTL.get(entry.getKey()) - 1);
-                                if (onlineTTL.get(entry.getKey()) <= 0) {
-                                    usrList.usrInfoMap.get(entry.getKey()).setState(0);
-                                    System.out.println(entry.getValue() + " offline.");
+                                if (onlineTTL.containsKey(entry.getKey())) {
+                                    if (onlineTTL.get(entry.getKey()) > 0)
+                                        onlineTTL.put(entry.getKey(), onlineTTL.get(entry.getKey()) - 1);
+                                    else {
+                                        usrList.usrInfoMap.get(entry.getKey()).setState(0);
+                                        System.out.println(entry.getValue() + " offline.");
+                                        frmList.refresh(usrList);
+                                    }
                                 }
-                                System.out.println("Send UDP to:" + entry.getValue().trim());
                             }
-                            Thread.sleep(1000);
+                            Thread.sleep(500);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();

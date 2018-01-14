@@ -28,6 +28,8 @@ public class SQLiteUtils {
             System.out.println(file.getAbsolutePath());
             dbExist = false;
         }
+
+
         try {
             System.out.println(new File("chat.db").getAbsolutePath());
             Class.forName("org.sqlite.JDBC");
@@ -97,7 +99,7 @@ public class SQLiteUtils {
     public List<Message> getMessages(String mac) {
         List<Message> messageList = new ArrayList<Message>();
         try {
-            String sql = "select * from chatLog where mac = \'" + mac + "\' order by time desc;";
+            String sql = "select * from chatLog where mac = \'" + mac + "\' order by time;";
             ResultSet rs = state.executeQuery(sql);
             while (rs.next()) {
                 Message message = new Message();
@@ -115,6 +117,29 @@ public class SQLiteUtils {
             return messageList;
         }
     }
+
+    public List<Message> getAllMessages() {
+        List<Message> messageList = new ArrayList<Message>();
+        try {
+            String sql = "select * from chatLog order by time;";
+            ResultSet rs = state.executeQuery(sql);
+            while (rs.next()) {
+                Message message = new Message();
+                message.setMAC(rs.getString("mac"));
+                message.setRecv(rs.getInt("recv"));
+                message.setType(rs.getInt("type"));
+                message.setContent(rs.getString("content"));
+                message.setTime(rs.getTimestamp("time"));
+                messageList.add(message);
+            }
+            rs.close();
+            return messageList;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return messageList;
+        }
+    }
+
 
     public void addMessage(Message message) {
         int id = getRowNum();
@@ -219,5 +244,14 @@ public class SQLiteUtils {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+    }
+
+    protected void finalize() {
+        try {
+            state.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -5,27 +5,16 @@ import data.SQLiteUtils;
 import main.Start;
 import model.Message;
 import model.UsrInfo;
+import model.UsrList;
 import net.HostInfo;
 import net.SocketClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.awt.*;
+import java.awt.event.*;
+import java.io.File;
 import javax.swing.*;
-import java.awt.BorderLayout;
-import java.awt.Button;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Frame;
-import java.awt.Panel;
-import java.awt.TextArea;
-import java.awt.TextField;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -42,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import javax.swing.ImageIcon;
 
 public class ChatForm extends JFrame {
@@ -50,9 +40,11 @@ public class ChatForm extends JFrame {
     private Button log;
     private Button clear;
     private Button file;
+    private Button group;
     private TextArea viewText;
     private TextArea sendText;
     public UsrInfo usrInfo;
+    public List<UsrInfo> usrInfoList;
 
 
     public void getMessage(Message recmessage) {
@@ -67,9 +59,14 @@ public class ChatForm extends JFrame {
         viewText.append(str);  //添加到显示区域
     }
 
-    public ChatForm(UsrInfo usrInfo) {
+    public ChatForm(UsrInfo usrInfo, List<UsrInfo> usrInfoList) {
         this.usrInfo = usrInfo;
+        this.usrInfoList = usrInfoList;
         init();
+        if (usrInfo.getRemark() != null)
+            this.setTitle(usrInfo.getRemark());
+        else
+            this.setTitle(usrInfo.getIP());
         southPanel(usrInfo.getRemark());
         centerPanel(usrInfo.getRemark());
         event(usrInfo);
@@ -88,13 +85,16 @@ public class ChatForm extends JFrame {
         sendText.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER && e.isControlDown()) {
-                    try {
-                        send(usrInfo.getRemark(), usrInfo.getIP());
-                    } catch (IOException e1) {
-                        e1.printStackTrace();//todo
+                if (usrInfo.getState() == 1) {
+                    if (e.getKeyCode() == KeyEvent.VK_ENTER && e.isControlDown()) {
+                        try {
+                            send(usrInfo.getRemark(), usrInfo.getIP());
+                        } catch (RuntimeException e1) {
+                            e1.printStackTrace();//todo
+                        }
                     }
                 }
+
             }
         });
 
@@ -103,7 +103,7 @@ public class ChatForm extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 try {
                     send(usrInfo.getRemark(), usrInfo.getIP());
-                } catch (IOException e1) {
+                } catch (RuntimeException e1) {
                     e1.printStackTrace();
                 }
             }
@@ -114,8 +114,7 @@ public class ChatForm extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 List<Message> messageList = new ArrayList<>();
                 try {
-                    SQLiteUtils sqLiteUtils = Start.sqLiteUtils;
-                    messageList = sqLiteUtils.getMessages(usrInfo.getMAC());
+                    messageList = Start.sqLiteUtils.getMessages(usrInfo.getMAC());
                 } catch (Exception e1) {
                     e1.printStackTrace();
                 }
@@ -135,19 +134,84 @@ public class ChatForm extends JFrame {
         file.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //LocalFile localFile = new LocalFile();
+                JFileChooser jfc = new JFileChooser();
+                File file = new File(".");
+                int returnVal = jfc.showOpenDialog(new JPanel());
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    file = jfc.getSelectedFile();
+                    if (file.getAbsolutePath() == null || file.getAbsolutePath().length() == 0)
+                        return;
+                }
+
                 Message filemessage = new Message();
                 filemessage.setType(Message.SENDFILE);
-                filemessage.setContent("发送文件");
-                filemessage.setMAC(usrInfo.getMAC());
+                filemessage.setContent(file.getAbsolutePath() + "," + file.length());
+                filemessage.setMAC(HostInfo.getMac());
                 filemessage.setRecv(1);
+
+                Date date = new Date();//获得系统时间.
+                String nowTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date);//将时间格式转换成符合Timestamp要求的格式.
+                Timestamp goodsC_date = Timestamp.valueOf(nowTime);//把时间转换
+                System.out.println(goodsC_date.toString());
+                filemessage.setTime(goodsC_date);
                 SocketClient socketClient = new SocketClient(usrInfo.getIP());
                 JsonUtils jsonUtils = new JsonUtils();
                 JSONObject Jmessage = JsonUtils.MessageToJson(filemessage);
-                //socketClient.SendJson(Jmessage);
+//                Start.sqLiteUtils.addMessage(filemessage);
+
+                new Thread(
+                        () -> {
+                            socketClient.SendJson(Jmessage);
+                        }
+                ).start();
+
             }
         });
+
+        group.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFrame frame = new JFrame("好友列表");// 定义窗体
+                Container container = frame.getContentPane();// 得到窗体容器
+                JCheckBox[] friendNameList;
+                JPanel panel = new JPanel();
+                JButton button = new JButton("确定");
+                panel.setBorder(BorderFactory.createTitledBorder("请选择你要发送信息的好友"));// 定义一个面板的边框显示条
+                panel.setLayout(new GridLayout(usrInfoList.size() + 1, 1));
+                friendNameList = new JCheckBox[usrInfoList.size()];
+                for (int i = 0; i < usrInfoList.size(); i++) {
+                    friendNameList[i] = new JCheckBox(usrInfoList.get(i).getIP());
+                    panel.add(friendNameList[i]);
+                    if (usrInfo == usrInfoList.get(i)) {
+                        friendNameList[i].setSelected(true);
+                    }
+                }
+                button.setSize(10, 10);
+                panel.add(button);
+                container.add(panel);// 加入面板
+                frame.setSize(300, 30 + 50 * usrInfoList.size());// 定义窗体大小
+                frame.setVisible(true);// 显示窗体
+                button.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        for (int i = 0; i < usrInfoList.size(); i++) {
+                            if (friendNameList[i].isSelected()) {
+                                System.out.println(usrInfoList.get(i).getIP());
+                                try {
+                                    send(usrInfoList.get(i).getRemark(), usrInfoList.get(i).getIP());
+                                } catch (RuntimeException e1) {
+                                    e1.printStackTrace();
+                                }
+                            }
+                        }
+                        frame.dispose();
+                    }
+                });
+            }
+
+        });
     }
+
 
     private String getCurrentTime() {
         Date d = new Date();                        //创建当前日期对象
@@ -172,6 +236,7 @@ public class ChatForm extends JFrame {
             SocketClient socketClient = new SocketClient(usrInfo.getIP());
             JsonUtils jsonUtils = new JsonUtils();
             JSONObject Jmessage = JsonUtils.MessageToJson(sendmessage);
+//            Start.sqLiteUtils.addMessage(sendmessage);
 
             new Thread(
                     () -> {
@@ -208,11 +273,13 @@ public class ChatForm extends JFrame {
         log = new Button("Log");
         file = new Button("File");
         clear = new Button("Clear");
+        group = new Button("group");
         south.add(tf);
         south.add(send);
         south.add(log);
         south.add(file);
         south.add(clear);
+        south.add(group);
         this.add(south, BorderLayout.SOUTH);         //将Panel放在Frame的南边
     }
     public void init() {

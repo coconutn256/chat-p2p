@@ -69,6 +69,6 @@ public class TestFileRecv {
     }
 
     public static void main(String[] args) {
-        new TestFileRecv().receiveFile("D:\\", "localhost", 8821);
+        new TestFileRecv().receiveFile(".\\", "localhost", 8821);
     }
 }
